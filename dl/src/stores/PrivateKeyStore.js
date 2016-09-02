@@ -10,6 +10,7 @@ import PrivateKeyActions from "actions/PrivateKeyActions"
 import CachedPropertyActions from "actions/CachedPropertyActions"
 import AddressIndex from "stores/AddressIndex"
 import {PublicKey, Address, ChainStore, hash, Aes} from "graphenejs-lib";
+import reduxStore from 'reducers/reduxStore'
 
 /** No need to wait on the promises returned by this store as long as
     this.state.privateKeyStorage_error == false and
@@ -181,7 +182,7 @@ class PrivateKeyStore extends BaseStore {
     }
     
     binaryBackupRecommended() {
-        CachedPropertyActions.set("backup_recommended", true)
+        reduxStore.setAction("backup_recommended", true)
     }
     
     pendingOperation() {

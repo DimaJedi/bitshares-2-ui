@@ -11,96 +11,104 @@ import WalletDb from "stores/WalletDb";
 import TimeAgo from "../Utility/TimeAgo";
 import Icon from "../Icon/Icon";
 import ReactTooltip from "react-tooltip"
+import {connect, Provider} from 'react-redux'
+import reduxStore from 'reducers/reduxStore'
 
 @BindToChainState({keep_updating: true})
 class Footer extends React.Component {
 
-    static propTypes = {
-        dynGlobalObject: ChainTypes.ChainObject.isRequired,
-        synced: React.PropTypes.bool.isRequired
-    };
+  static propTypes = {
+    dynGlobalObject: ChainTypes.ChainObject.isRequired,
+    synced: React.PropTypes.bool.isRequired
+  };
 
-    static defaultProps = {
-        dynGlobalObject: "2.1.0"
-    };
+  static defaultProps = {
+    dynGlobalObject: "2.1.0"
+  };
 
-    static contextTypes = {
-        history: React.PropTypes.object
-    };
+  static contextTypes = {
+    history: React.PropTypes.object,
+    store: React.PropTypes.object
+  };
 
-    shouldComponentUpdate(nextProps, nextState) {
-        return (
-            nextProps.dynGlobalObject !== this.props.dynGlobalObject ||
-            nextProps.backup_recommended !== this.props.backup_recommended ||
-            nextProps.rpc_connection_status !== this.props.rpc_connection_status ||
-            nextProps.synced !== this.props.synced
-       );
-    }
+  shouldComponentUpdate(nextProps, nextState) {
+    return (
+      nextProps.dynGlobalObject !== this.props.dynGlobalObject ||
+      nextProps.rpc_connection_status !== this.props.rpc_connection_status ||
+      nextProps.synced !== this.props.synced
+    );
+  }
 
-    render() {
+  render() {
 
-        let block_height = this.props.dynGlobalObject.get("head_block_number");
-        let block_time = this.props.dynGlobalObject.get("time") + "+00:00";
-        // console.log("block_time", block_time)
-        let bt = (new Date(block_time).getTime() + ChainStore.getEstimatedChainTimeOffset()) / 1000;
-        let now = new Date().getTime() / 1000;
-        let version_match = APP_VERSION.match(/2\.0\.(\d\w+)/);
-        let version = version_match ? `.${version_match[1]}` : ` ${APP_VERSION}`;
-        return (
-            <div className="show-for-medium grid-block shrink footer">
-                <div className="align-justify grid-block">
-                    <div className="grid-block">
-                        <div className="logo">
-                            <Translate content="footer.title" /><span className="version">{version}</span>
-                        </div>
-                    </div>
-                    {this.props.synced ? null : <div className="grid-block shrink txtlabel error"><Translate content="footer.nosync" />&nbsp; &nbsp;</div>}
-                    {this.props.rpc_connection_status === "closed" ? <div className="grid-block shrink txtlabel error"><Translate content="footer.connection" />&nbsp; &nbsp;</div> : null}
-                    {this.props.backup_recommended ? <span>
+    let block_height = this.props.dynGlobalObject.get("head_block_number");
+    let block_time = this.props.dynGlobalObject.get("time") + "+00:00";
+    // console.log("block_time", block_time)
+    let bt = (new Date(block_time).getTime() + ChainStore.getEstimatedChainTimeOffset()) / 1000;
+    let now = new Date().getTime() / 1000;
+    let version_match = APP_VERSION.match(/2\.0\.(\d\w+)/);
+    let version = version_match ? `.${version_match[1]}` : ` ${APP_VERSION}`;
+    return (
+      <div className="show-for-medium grid-block shrink footer">
+        <div className="align-justify grid-block">
+          <div className="grid-block">
+            <div className="logo">
+              <Translate content="footer.title"/><span className="version">{version}</span>
+            </div>
+          </div>
+          {this.props.synced ? null :
+            <div className="grid-block shrink txtlabel error"><Translate content="footer.nosync"/>&nbsp; &nbsp;</div>}
+          {this.props.rpc_connection_status === "closed" ?
+            <div className="grid-block shrink txtlabel error"><Translate content="footer.connection"/>&nbsp; &nbsp;
+            </div> : null}
+          {this.context.store["backup_recommended"] ? <span>
                         <div className="grid-block">
-                            <a className="shrink txtlabel facolor-alert"
-                                data-tip="Please understand that you are responsible for making your own backup&hellip;"
-                                data-type="warning"
-                                onClick={this.onBackup.bind(this)}><Translate content="footer.backup" /></a>
-                            &nbsp;&nbsp;
+                          <a className="shrink txtlabel facolor-alert"
+                             data-tip="Please understand that you are responsible for making your own backup&hellip;"
+                             data-type="warning"
+                             onClick={this.onBackup.bind(this)}><Translate content="footer.backup"/></a>
+                          &nbsp;&nbsp;
                         </div>
                     </span> : null}
-                    {this.props.backup_brainkey_recommended ? <span>
+          {this.props.backup_brainkey_recommended ? <span>
                         <div className="grid-block">
-                            <a className="grid-block shrink txtlabel facolor-alert" onClick={this.onBackupBrainkey.bind(this)}><Translate content="footer.brainkey" /></a>
-                            &nbsp;&nbsp;
+                          <a className="grid-block shrink txtlabel facolor-alert"
+                             onClick={this.onBackupBrainkey.bind(this)}><Translate content="footer.brainkey"/></a>
+                          &nbsp;&nbsp;
                         </div>
-                    </span>:null}
-                    {block_height ?
-                        (<div className="grid-block shrink">
-                            <Translate content="footer.block" /> &nbsp;
-                            <pre>#{block_height} </pre> &nbsp;
-                            { now - bt > 5 ? <TimeAgo ref="footer_head_timeago" time={block_time} /> : <span data-tip="Synchronized" data-place="left"><Icon name="checkmark-circle" /></span> }
-                        </div>) :
-                        <div className="grid-block shrink"><Translate content="footer.loading" /></div>}
-                </div>
-            </div>
-        );
-    }
+                    </span> : null}
+          {block_height ?
+            (<div className="grid-block shrink">
+              <Translate content="footer.block"/> &nbsp;
+              <pre>#{block_height} </pre>
+              &nbsp;
+              { now - bt > 5 ? <TimeAgo ref="footer_head_timeago" time={block_time}/> :
+                <span data-tip="Synchronized" data-place="left"><Icon name="checkmark-circle"/></span> }
+            </div>) :
+            <div className="grid-block shrink"><Translate content="footer.loading"/></div>}
+        </div>
+      </div>
+    );
+  }
 
-    onBackup() {
-        this.context.history.pushState(null, "/wallet/backup/create");
-    }
+  onBackup() {
+    this.context.history.pushState(null, "/wallet/backup/create");
+  }
 
-    onBackupBrainkey() {
-        this.context.history.pushState(null, "/wallet/backup/brainkey");
-    }
+  onBackupBrainkey() {
+    this.context.history.pushState(null, "/wallet/backup/brainkey");
+  }
 }
 
 class AltFooter extends Component {
 
-    render() {
-        var wallet = WalletDb.getWallet()
-        return <AltContainer
-            stores={[CachedPropertyStore, BlockchainStore, WalletDb]}
-            inject ={{
+  render() {
+    var wallet = WalletDb.getWallet()
+    return <Provider store={reduxStore}><AltContainer
+      stores={[CachedPropertyStore, BlockchainStore, WalletDb]}
+      inject={{
                 backup_recommended: ()=> 
-                    (wallet && ( ! wallet.backup_date || CachedPropertyStore.get("backup_recommended"))),
+                    (wallet && ( ! wallet.backup_date || this.context.store["backup_recommended"])),
                 rpc_connection_status: ()=> BlockchainStore.getState().rpc_connection_status
                 // Disable notice for separate brainkey backup for now to keep things simple.  The binary wallet backup includes the brainkey...
                 // backup_brainkey_recommended: ()=> {
@@ -109,9 +117,11 @@ class AltFooter extends Component {
                 //     return wallet.brainkey_sequence !== 0 && wallet.brainkey_backup_date == null
                 // }
             }}
-            ><Footer {...this.props}/>
-        </AltContainer>
-    }
+    ><Footer {...this.props}/>
+    </AltContainer></Provider>
+  }
 }
 
+// export default connect(reduxStore)(AltFooter);
 export default AltFooter;
+

@@ -8,6 +8,7 @@ import alt from "alt-instance"
 import iDB from "idb-instance"
 import Immutable from "immutable"
 import SettingsStore from "stores/SettingsStore"
+import reduxStore from 'reducers/reduxStore'
 
 var application_api = new ApplicationApi()
 //var fetch = require('node-fetch')
@@ -32,7 +33,7 @@ class WalletActions {
     }
 
     setBackupDate() {
-        CachedPropertyActions.set("backup_recommended", false)
+        reduxStore.setAction("backup_recommended", false)
         this.dispatch()
     }
 
